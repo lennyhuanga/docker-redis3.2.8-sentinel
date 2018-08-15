@@ -41,8 +41,8 @@ RUN mkdir -p /etc/redis && \
 #copy redis 相关配置文件
 RUN mv /tmp/redis_6379 /etc/init.d/redis_6379 && \
     mv /tmp/6379.conf  /etc/redis/6379.conf && \
-    mv /tmp/start-redis.sh  ~/start-redis.sh 
-    
+    mv /tmp/start-redis.sh  ~/start-redis.sh  && \
+    mv /tmp/start-sentinel.sh  ~/start-sentinel.sh
 ##### 修改redis.conf中的部分配置为生产环境
 #daemonize	yes							让redis以daemon进程运行 ########在docker中使用配置文件启动不能设为yes
 #pidfile		/var/run/redis_6379.pid 	设置redis的pid文件位置
@@ -68,15 +68,15 @@ RUN  mv /tmp/5000.conf  /etc/sentinel/5000.conf
 		
 #启动redis
 RUN chmod 777 /etc/init.d/redis_6379 && \
-	cd /etc/init.d/ && \
-	./redis_6379 start 
+	cd /etc/init.d/ 
+	#./redis_6379 start 
 	
 #update-rc.d redisd defaults 设置开机自动启动ubuntu的写法
 
 RUN update-rc.d redis_6379 defaults
 
 #启动sentinel
-RUN redis-server /etc/sentinel/5000.conf --sentinel
+#RUN redis-server /etc/sentinel/5000.conf --sentinel
 
 # ssh without key
 RUN ssh-keygen -t rsa -f ~/.ssh/id_rsa -P '' && \
