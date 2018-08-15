@@ -26,6 +26,8 @@ RUN wget http://download.redis.io/releases/redis-3.2.8.tar.gz && \
 	cd redis-3.2.8 && \
 	make && make test && make install
 	
+# 升级vim -y的作用是在执行过程中询问yes or no 时选yes
+RUN apt-get remove -y vim-common && apt-get install -y vim
 
 # set environment variable
 ENV JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64 
@@ -41,25 +43,44 @@ RUN mv /tmp/redis_6379 /etc/init.d/redis_6379 && \
     mv /tmp/6379.conf  /etc/redis/6379.conf && \
     mv /tmp/start-redis.sh  ~/start-redis.sh 
     
-##### 修改redis.conf中的部分配置为生产环境 
+##### 修改redis.conf中的部分配置为生产环境
+#daemonize	yes							让redis以daemon进程运行 ########在docker中使用配置文件启动不能设为yes
+#pidfile		/var/run/redis_6379.pid 	设置redis的pid文件位置
+#port		6379						设置redis的监听端口号
+#dir 		/var/redis/6379				设置持久化文件的存储位置 
 #1.配置输出日志
 #2.配置密码 
 #3.开启aof持久化
 #4.持久化文件存放位置#sed -i 's/dir/dir \/var\/redis\/6379/' /etc/redis/6379.conf  
 #5.将127.0.0.1 改成0.0.0.0 ，否则在外网ping不通. redissed -i 's/bind 127\.0\.0\.1/bind 0\.0\.0\.0/' /etc/redis/6379.conf   
+#6.配置读写分离， sed -i '/* /a*' filename  。在# slaveof <masterip> <masterport> 改成  slaveof 172.17.0.1 6379
+#6.配置master连接口令，masterauth
 RUN sed -i 's/logfile ""/logfile "access.log"/' /etc/redis/6379.conf && \
-	  sed -i 's/# requirepass foobared/requirepass 123456/' /etc/redis/6379.conf && \
-		sed -i 's/appendonly no/appendonly yes/' /etc/redis/6379.conf   && \
-		sed -i 's/bind 127\.0\.0\.1/bind 0\.0\.0\.0/' /etc/redis/6379.conf  
-		
+	sed -i 's/# requirepass foobared/requirepass 123456/' /etc/redis/6379.conf && \
+	sed -i 's/appendonly no/appendonly yes/' /etc/redis/6379.conf   && \
+	sed -i 's/bind 127\.0\.0\.1/bind 0\.0\.0\.0/' /etc/redis/6379.conf   && \
+	sed -i 's/# slaveof <masterip> <masterport>/slaveof 172\.17\.0\.1 6379/' /etc/redis/6379.conf && \
+	sed -i 's/# masterauth <master-password>/masterauth 123456/' /etc/redis/6379.conf && \
+	sed -i 's/daemonize yes/daemonize no/' /etc/redis/6379.conf  
+
+#设置sentinel
+RUN mkdir /etc/sentinel && \   
+    mkdir -p /var/sentinel/5000 
+
+#copy sentinel 相关配置文件
+RUN  mv /tmp/5000.conf  /etc/sentinel/5000.conf 
+	
 #启动redis
 RUN chmod 777 /etc/init.d/redis_6379 && \
-	cd /etc/init.d/ && \
-	./redis_6379 start 
+	cd /etc/init.d/ 
+	#./redis_6379 start 
 	
 #update-rc.d redisd defaults 设置开机自动启动ubuntu的写法
 
 RUN update-rc.d redis_6379 defaults
+
+#RUN redis-sentinel /etc/sentinel/5000.conf
+RUN redis-server /etc/sentinel/5000.conf --sentinel
 
 # ssh without key
 RUN ssh-keygen -t rsa -f ~/.ssh/id_rsa -P '' && \
@@ -68,5 +89,7 @@ RUN ssh-keygen -t rsa -f ~/.ssh/id_rsa -P '' && \
 
 EXPOSE 6379
 
-CMD [ "sh", "-c", "service ssh start; bash"]
-
+CMD [ "redis-server", "/etc/redis/6379.conf"]
+#/usr/local/bin/redis-server
+#docker build -t huanglin/redislave:3.2.8 .
+#docker run -itd -p 6385:6379 --name redislave5  huanglin/redislave5:3.2.8 redis-server /etc/redis/6379.conf

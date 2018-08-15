@@ -2,7 +2,7 @@
 
 echo ""
 
-echo -e "\nbuild docker hadoop image\n"
-sudo docker build -t huanglin/learn:1.0 .
+echo -e "\nbuild docker redis image\n"
+sudo docker build -t huanglin/redismaster:3.2.8 .
 
 echo ""

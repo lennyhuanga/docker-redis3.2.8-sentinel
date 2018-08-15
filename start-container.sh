@@ -1,36 +1,35 @@
 #!/bin/bash
-
+#docker run -itd -p 6379:6379 --name redismaster huanglin/redismaster:3.2.8 redis-server /etc/redis/6379.conf  
 # the default node number is 3
 N=${1:-3}
 
 
-# start hadoop master container ,9000,9001映射后方便eclipse连接docker里的hadoop
-sudo docker rm -f hadoop-master &> /dev/null
-echo "start hadoop-master container..."
+# start redis master container 
+sudo docker rm -f redis-master &> /dev/null
+echo "start redis-master container..."
 sudo docker run -itd \
-                --net=hadoop \
-                -p 50070:50070 \
-                -p 8088:8088 \
-		-p 9000:9000 \
-                -p 9001:9001 \
-                --name hadoop-master \
-                --hostname hadoop-master \
-                kiwenlau/hadoop:1.0 &> /dev/null
+               # --net=redis \
+                -p 6379:6379 \
+                --name redis-master \
+                --hostname redis-master \
+                huanglin/redismaster:3.2.8 redis-server /etc/redis/6379.conf  
 
 
-# start hadoop slave container
+# start redis slave container
 i=1
 while [ $i -lt $N ]
 do
-	sudo docker rm -f hadoop-slave$i &> /dev/null
-	echo "start hadoop-slave$i container..."
+	sudo docker rm -f redis-slave$i &> /dev/null
+	echo "start redis-slave$i container..."
+	port=$(( $i + 6379 ))
 	sudo docker run -itd \
-	                --net=hadoop \
-	                --name hadoop-slave$i \
-	                --hostname hadoop-slave$i \
-	                kiwenlau/hadoop:1.0 &> /dev/null
+	               # --net=redis \
+				    -p $port:6379 \
+	                --name redis-slave$i \
+	                --hostname redis-slave$i \
+	                huanglin/redislave:3.2.8 redis-server /etc/redis/6379.conf  
 	i=$(( $i + 1 ))
 done 
 
-# get into hadoop master container
-sudo docker exec -it hadoop-master bash
+# get into redis master container
+sudo docker exec -it redis-master bash

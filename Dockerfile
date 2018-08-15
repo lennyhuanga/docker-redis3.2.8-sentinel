@@ -26,6 +26,8 @@ RUN wget http://download.redis.io/releases/redis-3.2.8.tar.gz && \
 	cd redis-3.2.8 && \
 	make && make test && make install
 	
+# 升级vim -y的作用是在执行过程中询问yes or no 时选yes
+RUN apt-get remove -y vim-common && apt-get install -y vim
 
 # set environment variable
 ENV JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64 
@@ -42,7 +44,7 @@ RUN mv /tmp/redis_6379 /etc/init.d/redis_6379 && \
     mv /tmp/start-redis.sh  ~/start-redis.sh 
     
 ##### 修改redis.conf中的部分配置为生产环境
-#daemonize	yes							让redis以daemon进程运行
+#daemonize	yes							让redis以daemon进程运行 ########在docker中使用配置文件启动不能设为yes
 #pidfile		/var/run/redis_6379.pid 	设置redis的pid文件位置
 #port		6379						设置redis的监听端口号
 #dir 		/var/redis/6379				设置持久化文件的存储位置 
@@ -54,7 +56,15 @@ RUN mv /tmp/redis_6379 /etc/init.d/redis_6379 && \
 RUN sed -i 's/logfile ""/logfile "access.log"/' /etc/redis/6379.conf && \
 	  sed -i 's/# requirepass foobared/requirepass 123456/' /etc/redis/6379.conf && \
 		sed -i 's/appendonly no/appendonly yes/' /etc/redis/6379.conf   && \
-		sed -i 's/bind 127\.0\.0\.1/bind 0\.0\.0\.0/' /etc/redis/6379.conf  
+		sed -i 's/bind 127\.0\.0\.1/bind 0\.0\.0\.0/' /etc/redis/6379.conf && \ 
+		sed -i 's/daemonize yes/daemonize no/' /etc/redis/6379.conf  
+		
+#设置sentinel
+RUN mkdir /etc/sentinel && \   
+    mkdir -p /var/sentinel/5000 
+
+#copy sentinel 相关配置文件
+RUN  mv /tmp/5000.conf  /etc/sentinel/5000.conf 
 		
 #启动redis
 RUN chmod 777 /etc/init.d/redis_6379 && \
@@ -65,6 +75,9 @@ RUN chmod 777 /etc/init.d/redis_6379 && \
 
 RUN update-rc.d redis_6379 defaults
 
+#启动sentinel
+RUN redis-server /etc/sentinel/5000.conf --sentinel
+
 # ssh without key
 RUN ssh-keygen -t rsa -f ~/.ssh/id_rsa -P '' && \
     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
@@ -72,5 +85,7 @@ RUN ssh-keygen -t rsa -f ~/.ssh/id_rsa -P '' && \
 
 EXPOSE 6379
 
-CMD [ "sh", "-c", "service ssh start; bash"]
+CMD [ "redis-server", "/etc/redis/6379.conf"]
 
+#docker build -t huanglin/redismaster:3.2.8 .
+#docker run -itd -p 6379:6379 --name redismaster huanglin/redismaster:3.2.8 redis-server /etc/redis/6379.conf 
