@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# N is the node number of hadoop cluster
+# N is the node number of redis cluster
 N=$1
 
 if [ $# = 0 ]
 then
-	echo "Please specify the node number of hadoop cluster!"
+	echo "Please specify the node number of redis cluster!"
 	exit 1
 fi
 

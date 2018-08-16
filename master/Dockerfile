@@ -34,7 +34,7 @@ ENV JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 ENV PATH=$PATH:$JAVA_HOME/bin
 
 # redis config
-COPY config/* /tmp/
+COPY ../config/* /tmp/
 RUN mkdir -p /etc/redis && \   
     mkdir -p /var/redis/6379  
 

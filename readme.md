@@ -1,22 +1,33 @@
-´¦Àí£º/var/redis/run/redis_6379.pid exists, process is already running or crashed
-2017Äê01ÔÂ21ÈÕ 23:02:15
-ÔÄ¶ÁÊý£º13104
-ÃüÁî;service redis start
+ç¬¬ä¸€æ­¥ï¼šå®‰è£…git
+ç¬¬äºŒæ­¥ï¼šgit clone https://github.com/lennyhuanga/learn
 
-/var/redis/run/redis_6379.pid exists, process is already running or crashed
+ç¬¬ä¸‰æ­¥ï¼šåˆ›å»ºredis master é•œåƒ
+##éœ€è¦æ³¨æ„å§5000.conf ã€Dockerfileç­‰é…ç½®æ–‡ä»¶ä¸­masteråœ°å€æ”¹æˆçœŸå®žipåœ°å€
+cd master
+mkdir config
+cd ..
+cp  config/*  master/config/
+chmod 777 build-image.sh
+./build-image.sh
 
+ç¬¬å››æ­¥ï¼šåˆ›å»º redis slave é•œåƒ
+##éœ€è¦æ³¨æ„å§5000.conf ã€Dockerfileç­‰é…ç½®æ–‡ä»¶ä¸­masterã€slaveåœ°å€æ”¹æˆçœŸå®žipåœ°å€
+cd slave
+mkdir config
+cd ..
+cp  config/*  slave/config/
+chmod 777 build-image.sh
+./build-image.sh
 
+ç¬¬äº”æ­¥ï¼šåˆ›å»ºå®¹å™¨
+chmod 777 start-container.sh
+./start-container.sh
 
-ÒýÆðÕâÀàÎÊÌâÒ»°ã¶¼ÊÇÇ¿ÖÆ¹ØµôµçÔ´»ò¶ÏµçÔì³ÉµÄ£¬Ò²ÊÇÃ»µÈlinuxÕý³£¹Ø»ú
-
-
-
-¿ÆÑ§µÄ´¦Àí°ì·¨2ÖÖ
-
-     1£º¿ÉÓÃ°²×°ÎÄ¼þÆô¶¯     redis-server /etc/redis/6379.conf
-
-2£ºshutdown -r now ÈíÖØÆôÈÃÏµÍ³×Ô¶¯»Ö¸´ÏÂ¾ÍÐÐÁË
-
-
-
-×¢£ºÍøÉÏµÄËµ·¨²»¿ÉÈ¡£¬²»Òª¸Ä¶¯ÈÎºÎÎÄ¼þ£¬ÆäÊµÊ²Ã´ÅäÖÃµÈ±ä»¯¶¼Ã»ÓÐ
+ç¬¬å…­æ­¥ï¼šå¼€å¯sentinel
+åˆ†åˆ«è¿›å…¥master slave
+ps -ef|grep redis
+chmod 777 start-reids.sh
+chmod 777 start-sentinel.sh
+./ start-sentinel.sh
+redis-cli -a xxxx 
+info
