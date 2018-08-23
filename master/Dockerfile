@@ -57,6 +57,7 @@ RUN sed -i 's/logfile ""/logfile "access.log"/' /etc/redis/6379.conf && \
 	  sed -i 's/# requirepass foobared/requirepass 123456/' /etc/redis/6379.conf && \
 		sed -i 's/appendonly no/appendonly yes/' /etc/redis/6379.conf   && \
 		sed -i 's/bind 127\.0\.0\.1/bind 0\.0\.0\.0/' /etc/redis/6379.conf && \ 
+		sed -i 's/# masterauth <master-password>/masterauth 123456/' /etc/redis/6379.conf && \
 		sed -i 's/daemonize yes/daemonize no/' /etc/redis/6379.conf  
 		
 #…Ë÷√sentinel
