@@ -1,5 +1,5 @@
 第一步：安装git
-第二步：git clone https://github.com/lennyhuanga/learn
+第二步：git clone https://github.com/lennyhuanga/docker-redis3.2.8-sentinel
 
 第三步：创建redis master 镜像
 ##需要注意吧5000.conf 、Dockerfile等配置文件中master地址改成真实ip地址
